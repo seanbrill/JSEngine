@@ -1,0 +1,14 @@
+body {
+    margin: 0;
+    background-color: mediumspringgreen;
+    min-height: 100vh;
+    min-width: 100vw;
+    display: flex;
+    justify-content: center;
+}
+
+canvas {
+    height: 100%;
+    width: 100%;
+    background-color: black;
+}

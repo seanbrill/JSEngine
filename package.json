@@ -1,0 +1,22 @@
+{
+  "name": "jsengine",
+  "version": "0.1.0",
+  "description": "A custom framework to make creating ThreeJs games and apps easier for developers",
+  "main": "index.js",
+  "scripts": {
+    "build": "npx tsc",
+    "start": "npx tsc && node ./Engine/Compile/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "three": "^0.160.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "@types/three": "^0.160.0",
+    "typescript": "^5.3.3"
+  }
+}

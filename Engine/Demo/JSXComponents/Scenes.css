@@ -1,0 +1,13 @@
+.error-text {
+    font-weight: bold;
+    color: red;
+}
+
+.scene-1 {
+    height: 100vh;
+    width: 100vw;
+    margin: auto;
+    background-color: black;
+    display: flex;
+    cursor: crosshair;
+}

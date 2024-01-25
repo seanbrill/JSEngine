@@ -1,0 +1,12 @@
+{
+  "webpack-env": "development",
+  "webpack-dev-server-dir": "Demo/dist",
+  "bundle-name": "demo",
+  "input-file": "Demo/index.js",
+  "output-file": "Demo/dist/demo.[contenthash]",
+  "main-html-template": "Demo/template.html",
+  "main-html-template-title": "JSEngine Demo",
+  "main-html-template-filename": "index.html",
+  "ui-templates": "Demo/ui",
+  "enable-bundle-analysis": false
+}

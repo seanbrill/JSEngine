@@ -4,9 +4,11 @@
   "description": "A custom framework to make creating ThreeJs games and apps easier for developers",
   "main": "index.js",
   "scripts": {
-    "build": "npx tsc",
-    "start": "npx tsc && node ./Engine/Compile/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "npm run build-all && npm run dev",
+    "build-all": "npx tsc && webpack",
+    "build-engine": "npx tsc",
+    "build-app": "webpack",
+    "dev": "webpack serve"
   },
   "keywords": [],
   "author": "",
@@ -17,6 +19,14 @@
   "devDependencies": {
     "@types/node": "^20.11.5",
     "@types/three": "^0.160.0",
-    "typescript": "^5.3.3"
+    "css-loader": "^6.9.1",
+    "file-loader": "^6.2.0",
+    "html-webpack-plugin": "^5.6.0",
+    "style-loader": "^3.3.4",
+    "typescript": "^5.3.3",
+    "webpack": "^5.89.0",
+    "webpack-bundle-analyzer": "^4.10.1",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^4.15.1"
   }
 }

@@ -4,6 +4,8 @@ import { InputManager } from "../Input/InputManager";
 import { clamp } from "three/src/math/MathUtils";
 import { PhysicsOptions, defaultPhysicsOptions } from "../Base/Physics/Physics";
 import { position, rotation } from "../Base/Interfaces";
+import { Scene } from "../Scene/Scene";
+import { constrainedMemory } from "process";
 
 export interface FirstPersonCameraOptions {
   enableCameraBob: boolean,
@@ -50,7 +52,7 @@ export class FirstPersonCamera extends Camera {
   movementSpeed = 1;
   options;
 
-  constructor(scene: THREE.Scene, name: string, fov: number, near: number, far: number, position: position, rotation: rotation, movementSpeed: number, options = defaultFristPersonCameraOptions, physicsOptions: PhysicsOptions = defaultPhysicsOptions) {
+  constructor(scene: Scene, name: string, fov: number, near: number, far: number, position: position, rotation: rotation, movementSpeed: number, options = defaultFristPersonCameraOptions, physicsOptions: PhysicsOptions = defaultPhysicsOptions) {
     super(scene, name, fov, near, far, position, rotation, physicsOptions);
     this.translation = new THREE.Vector3(...this.camera.position);
     this.movementSpeed = movementSpeed;
@@ -62,7 +64,12 @@ export class FirstPersonCamera extends Camera {
 
   Update() {
     super.Update();
-    this.camera.position.lerp(this.translation, 0.15);
+    //normalize the transition to 1s
+    if (this.scene.deltaTime < 0.001) {
+      this.camera.position.lerp(this.translation, (this.scene.deltaTime * 1000));
+    } else {
+      this.camera.position.lerp(this.translation, (0.0005 * 1000));
+    }
   }
 
   RegisterLookToggle() {
@@ -107,7 +114,12 @@ export class FirstPersonCamera extends Camera {
   RegisterMove() {
     InputManager.RegisterHandler("keydown", () => {
       let keys = Array.from(InputManager.GetActiveKeys());
-      let movementFactor = 0.1;
+      let movementFactor: number = 1;
+      if (this.scene.deltaTime < 0.001) {
+        movementFactor = (500 * this.scene.deltaTime);
+      } else {
+        movementFactor = (500 * 0.0005);
+      }
       let forward = this.GetForwardVector(this.movementSpeed * movementFactor);
       let left = this.GetLeftVector(this.movementSpeed * movementFactor);
 

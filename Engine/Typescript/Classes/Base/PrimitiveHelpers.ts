@@ -1,218 +1,332 @@
 import * as THREE from "three";
-import { scale, position, rotation, scale2D } from "./Interfaces";
+import { scale, position, rotation, scale2D, primitive3DOptions, primitiveLightOptions, SkyboxOptions } from "./Interfaces";
+import { Scene } from "../Scene/Scene";
+import { GameObject } from "./GameObject";
+import { PhysicsOptions, defaultPhysicsOptions } from "./Physics/Physics";
+
+const skyboxDefaults: SkyboxOptions = {
+  name: 'skybox',
+  scale: { x: 1000, y: 1000, z: 1000 },
+  color: '#76b1db', //skyblue
+}
+const ambientLightDefaults: primitiveLightOptions = {
+  name: 'ambient-light',
+  color: '#ffffff',
+  intensity: 1
+}
+const pointLightDefaults: primitiveLightOptions = {
+  name: 'point-light',
+  color: '#ffffff',
+  intensity: 1,
+  distance: 2,
+  decay: 2,
+  position: { x: 0, y: 20, z: 0 }
+}
+const directionalLightDefaults: primitiveLightOptions = {
+  name: 'directional-light',
+  color: '#ffffff',
+  intensity: 1,
+  position: { x: 0, y: 20, z: 0 },
+  target: { x: 0, y: 0, z: 0 }
+}
+const spotLightDefaults: primitiveLightOptions = {
+  name: 'spot-light',
+  color: '#ffffff',
+  intensity: 1,
+  position: { x: 0, y: 20, z: 0 },
+  target: { x: 0, y: 0, z: 0 }
+}
+const cubeDefaults: primitive3DOptions = {
+  name: 'cube',
+  scale: { x: 1, y: 1, z: 1 },
+  position: { x: 0, y: 0, z: 0 },
+  rotation: { x: 0, y: 0, z: 0 },
+  color: '#ffffff',
+  texturePath: null
+}
+const coneDefaults: primitive3DOptions = {
+  name: 'cone',
+  scale: { x: 1, y: 1, z: 1 },
+  position: { x: 0, y: 0, z: 0 },
+  rotation: { x: 0, y: 0, z: 0 },
+  color: '#ffffff',
+  texturePath: null
+}
+const sphereDefaults: primitive3DOptions = {
+  name: 'sphere',
+  scale: { x: 1, y: 1, z: 1 },
+  position: { x: 0, y: 0, z: 0 },
+  rotation: { x: 0, y: 0, z: 0 },
+  color: '#ffffff',
+  texturePath: null
+}
+const planeDefaults: primitive3DOptions = {
+  name: 'cone',
+  scale: { x: 1, y: 1, z: 1 },
+  position: { x: 0, y: 0, z: 0 },
+  rotation: { x: 0, y: 0, z: 0 },
+  color: '#ffffff',
+  texturePath: null
+}
 
 export class Primitives {
-  scene: THREE.Scene;
-  constructor(scene: THREE.Scene) {
+  scene: Scene;
+  constructor(scene: Scene) {
     this.scene = scene;
   }
-  /**
-   * Create an ambient light with custom properties.
-   * @param {Object} color - Color of the light in hex format.
-   * @returns {THREE.AmbientLight} - The created ambient light.
-   */
-  CreateAmbientLight(color: string): THREE.AmbientLight {
-    return new THREE.AmbientLight(color);
-  }
 
   /**
-   * Create a point light with custom properties.
-   * @param {Object} color - Color of the light in hex format.
-   * @param {Object} position - Position of the light {x, y, z}.
-   * @param {number} intensity - Intensity of the light.
-   * @returns {THREE.PointLight} - The created point light.
-   */
-  CreatePointLight(color: string, position: THREE.Vector3, intensity: number): THREE.PointLight {
-    const light = new THREE.PointLight(color, intensity);
-    light.position.set(position.x, position.y, position.z);
-    return light;
-  }
-
-  /**
-   * Create a directional light with custom properties.
-   * @param {Object} color - Color of the light in hex format.
-   * @param {Object} position - Position of the light {x, y, z}.
-   * @param {Object} target - Target position of the light {x, y, z}.
-   * @param {number} intensity - Intensity of the light.
-   * @returns {THREE.DirectionalLight|null} - The created directional light or null in case of error.
-   */
-  CreateDirectionalLight(color: number, position: position, target: position, intensity: number): THREE.DirectionalLight | null {
-    try {
-      if (!color || typeof color !== "number") {
-        throw new Error("Invalid color parameter.");
-      }
-
-      if (!position || typeof position !== "object" || !("x" in position) || !("y" in position) || !("z" in position)) {
-        throw new Error("Invalid position parameter.");
-      }
-
-      if (!target || typeof target !== "object" || !("x" in target) || !("y" in target) || !("z" in target)) {
-        throw new Error("Invalid target parameter.");
-      }
-
-      if (typeof intensity !== "number") {
-        throw new Error("Invalid intensity parameter.");
-      }
-
-      const light = new THREE.DirectionalLight(color, intensity);
-      light.position.set(position.x, position.y, position.z);
-      light.target.position.set(target.x, target.y, target.z);
-      this.scene.add(light);
-      return light;
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error("Error creating directional light:", error.message);
-      }
-      return null;
-    }
-  }
-
-  /**
-   * Create a spot light with custom properties.
-   * @param {Object} color - Color of the light in hex format.
-   * @param {Object} position - Position of the light {x, y, z}.
-   * @param {Object} target - Target position of the light {x, y, z}.
-   * @param {number} intensity - Intensity of the light.
-   * @returns {THREE.SpotLight} - The created spot light.
-   */
-  CreateSpotLight(color: string, position: THREE.Vector3, target: THREE.Vector3, intensity: number): THREE.SpotLight {
-    const light = new THREE.SpotLight(color, intensity);
-    light.position.set(position.x, position.y, position.z);
-    light.target.position.set(target.x, target.y, target.z);
-    this.scene.add(light.target);
-    return light;
-  }
-
-  /**
-   * Create a cube with custom properties.
-   * @param {Object} scale - Scale of the cube in each dimension {x, y, z}.
-   * @param {Object} position - Position of the cube {x, y, z}.
-   * @param {Object} rotation - Rotation of the cube in radians {x, y, z}.
-   * @param {string} color - Color of the cube in hex format.
-   * @param {string} texturePath - Path to the texture image.
-   */
-  CreateCube(scale: scale = { x: 1, y: 1, z: 1 }, position: position = { x: 0, y: 0, z: 0 }, rotation: rotation = { x: 0, y: 0, z: 0 }, color: string = "#ffffff", texturePath: string | null = null): void {
-    const geometry = new THREE.BoxGeometry(scale.x, scale.y, scale.z);
-
+     * Creates a skybox with the specified options
+     * @param {SkyboxOptions} options - properties of the skybox
+     * @param {boolean} instantiate - boolean that determines if the created object is automatically added to the scene
+     * @returns {GameObject} - the created skybox
+     */
+  CreateSkyBox(options: SkyboxOptions, instantiate: boolean = true): GameObject {
     // Check if texturePath is provided
     let material;
-    if (texturePath) {
+    if (options.texturePath) {
       const textureLoader = new THREE.TextureLoader();
-      const texture = textureLoader.load(texturePath);
-
-      // Use MeshStandardMaterial for realistic lighting with textures
-      material = new THREE.MeshStandardMaterial({ map: texture });
-    } else {
-      // Use basic material with color if no texturePath is provided
-      material = new THREE.MeshBasicMaterial({ color: color ? new THREE.Color(color) : 0x00ff00 });
-    }
-
-    const cube = new THREE.Mesh(geometry, material);
-    cube.position.set(position.x, position.y, position.z);
-    cube.rotation.set(rotation.x, rotation.y, rotation.z);
-
-    this.scene.add(cube);
-  }
-
-  /**
-   * Create a cube with custom properties.
-   * @param {Object} scale - Scale of the sphere in each dimension {x, y, z}.
-   * @param {Object} position - Position of the cube {x, y, z}.
-   * @param {Object} rotation - Rotation of the cube in radians {x, y, z}.
-   * @param {string} color - Color of the cube in hex format.
-   * @param {string} texturePath - Path to the texture image.
-   */
-  CreateSphere(scale: scale = { x: 1, y: 1, z: 1 }, position: position = { x: 0, y: 0, z: 0 }, rotation: rotation = { x: 0, y: 0, z: 0 }, color: string = "#ffffff", texturePath: string | null = null): void {
-    const geometry = new THREE.SphereGeometry(scale.x, scale.y, scale.z);
-
-    // Check if texturePath is provided
-    let material;
-    if (texturePath) {
-      const textureLoader = new THREE.TextureLoader();
-      const texture = textureLoader.load(texturePath);
-
-      // Use MeshStandardMaterial for realistic lighting with textures
-      material = new THREE.MeshStandardMaterial({ map: texture });
-    } else {
-      // Use basic material with color if no texturePath is provided
-      material = new THREE.MeshBasicMaterial({ color: color ? new THREE.Color(color) : 0x00ff00 });
-    }
-
-    const cube = new THREE.Mesh(geometry, material);
-    cube.position.set(position.x, position.y, position.z);
-    cube.rotation.set(rotation.x, rotation.y, rotation.z);
-
-    this.scene.add(cube);
-    console.log("cube created");
-  }
-
-  /**
-   * Create a cone with custom properties.
-   * @param {Object} scale - Scale of the sphere in each dimension {x, y, z}.
-   * @param {Object} position - Position of the cube {x, y, z}.
-   * @param {Object} rotation - Rotation of the cube in radians {x, y, z}.
-   * @param {string} color - Color of the cube in hex format.
-   * @param {string} texturePath - Path to the texture image.
-   */
-  CreateCone(scale: scale = { x: 1, y: 1, z: 1 }, position: position = { x: 0, y: 0, z: 0 }, rotation: rotation = { x: 0, y: 0, z: 0 }, color: string = "#ffffff", texturePath: string | null = null): void {
-    const geometry = new THREE.ConeGeometry(scale.x, scale.y, scale.z);
-
-    // Check if texturePath is provided
-    let material;
-    if (texturePath) {
-      const textureLoader = new THREE.TextureLoader();
-      const texture = textureLoader.load(texturePath);
-
-      // Use MeshStandardMaterial for realistic lighting with textures
-      material = new THREE.MeshStandardMaterial({ map: texture });
-    } else {
-      // Use basic material with color if no texturePath is provided
-      material = new THREE.MeshBasicMaterial({ color: color ? new THREE.Color(color) : 0x00ff00 });
-    }
-
-    const cube = new THREE.Mesh(geometry, material);
-    cube.position.set(position.x, position.y, position.z);
-    cube.rotation.set(rotation.x, rotation.y, rotation.z);
-
-    this.scene.add(cube);
-  }
-
-  /**
-   * Create a cone with custom properties.
-   * @param {Object} scale - Scale of the sphere in each dimension {x, y, z}.
-   * @param {Object} position - Position of the cube {x, y, z}.
-   * @param {Object} rotation - Rotation of the cube in radians {x, y, z}.
-   * @param {string} color - Color of the cube in hex format.
-   * @param {string} texturePath - Path to the texture image.
-   */
-  CreatePlane(scale: scale2D = { x: 1, y: 1 }, position: position = { x: 0, y: 0, z: 0 }, rotation: rotation = { x: 0, y: 0, z: 0 }, color: string | null = "#ffffff", texturePath: string | null = null): void {
-    const geometry = new THREE.PlaneGeometry(scale.x, scale.y);
-
-    // Check if texturePath is provided
-    let material;
-    if (texturePath) {
-      const textureLoader = new THREE.TextureLoader();
-      const texture = textureLoader.load(texturePath);
-
-      // assuming you want the texture to repeat in both directions:
+      const texture = textureLoader.load(options.texturePath);
+      // Repeat texture in both directions
       texture.wrapS = THREE.RepeatWrapping;
       texture.wrapT = THREE.RepeatWrapping;
       // how many times to repeat in each direction; the default is (1,1),
-      //which is probably why your example wasn't working
-      texture.repeat.set(75, 75);
-      console.log("loading texture");
+      texture.repeat.set(options.textureRepeat?.x ?? 1, options.textureRepeat?.y ?? 1);
       // Use MeshStandardMaterial for realistic lighting with textures
-      material = new THREE.MeshStandardMaterial({ map: texture });
+      material = new THREE.MeshStandardMaterial({ map: texture, color: options.color ? new THREE.Color(options.color) : 0x00ff00, side: THREE.BackSide });
+
     } else {
       // Use basic material with color if no texturePath is provided
-      material = new THREE.MeshBasicMaterial({ color: color ? new THREE.Color(color) : 0x00ff00 });
+      material = new THREE.MeshBasicMaterial({ color: options.color ? new THREE.Color(options.color) : 0x00ff00, side: THREE.BackSide });
+    }
+    let box = new THREE.BoxGeometry(options.scale.x, options.scale.y, options.scale.z)
+    let skybox = new THREE.Mesh(box, material);
+    let gameObject = new GameObject(this.scene, options.name, skybox)
+    if (instantiate) {
+      gameObject.Instantiate();
+    }
+    return gameObject;
+  }
+
+  /**
+   * Provides overall, uniform illumination to the entire scene.
+   * @param {primitiveLightOptions} options - properties of the ambient light
+   * @returns {GameObject} - the created ambient light
+   */
+  CreateAmbientLight(options: primitiveLightOptions = ambientLightDefaults, instantiate: boolean = true): GameObject {
+    let light = new THREE.AmbientLight(options.color, options.intensity);
+    let gameObject = new GameObject(this.scene, options.name, light);
+    if (instantiate) {
+      gameObject.Instantiate();
+    }
+    return gameObject;
+  }
+
+  /**
+   * Represents a light source that emits light in all directions from a single point.
+   * @param {primitiveLightOptions} options - properties of the ambient light
+   * @returns {GameObject} - the created point light
+   */
+  CreatePointLight(options: primitiveLightOptions = pointLightDefaults, instantiate: boolean = true): GameObject {
+    let light = new THREE.PointLight(options.color, options.intensity, options.distance, options.decay);
+    if (options.position) light.position.copy(new THREE.Vector3(options.position.x, options.position.y, options.position.z));
+    let gameObject = new GameObject(this.scene, options.name, light);
+    if (instantiate) {
+      gameObject.Instantiate();
+    }
+    return gameObject;
+  }
+
+  /**
+   * Represents a light source that emits light in parallel rays from a given direction.
+   * @param {primitiveLightOptions} options - properties of the ambient light
+   * @param {boolean} instantiate - boolean that determines if the created object is automatically added to the scene
+   * @returns {GameObject} - the created directional light
+   */
+  CreateDirectionalLight(options: primitiveLightOptions = directionalLightDefaults, instantiate: boolean = true): GameObject {
+    let light = new THREE.DirectionalLight(options.color, options.intensity);
+    light.lookAt(new THREE.Vector3(options.target?.x, options.target?.y, options.target?.z))
+    if (options.position) light.position.copy(new THREE.Vector3(options.position.x, options.position.y, options.position.z));
+    let gameObject = new GameObject(this.scene, options.name, light);
+    if (instantiate) {
+      gameObject.Instantiate();
+    }
+    return gameObject;
+  }
+
+  /**
+   * Represents a light source that emits light within a cone-shaped region.
+   * @param {primitiveLightOptions} options - properties of the ambient light
+   * @param {boolean} instantiate - boolean that determines if the created object is automatically added to the scene
+   * @returns {GameObject} - the created spot light
+   */
+  CreateSpotLight(options: primitiveLightOptions = spotLightDefaults, instantiate: boolean = true): GameObject {
+    let light = new THREE.SpotLight(options.color, options.intensity, options.distance, options.angle, options.penumbra, options.decay);
+    light.lookAt(new THREE.Vector3(options.target?.x, options.target?.y, options.target?.z))
+    if (options.position) light.position.copy(new THREE.Vector3(options.position.x, options.position.y, options.position.z));
+    let gameObject = new GameObject(this.scene, options.name, light);
+    if (instantiate) {
+      gameObject.Instantiate();
+    }
+    return gameObject;
+  }
+
+  /**
+   * Create a cube with custom properties.
+   * @param {primitive3DOptions} options 
+   * @param {PhysicsOptions} physicsOptions - Physics options to be applied to the created GameObject
+   * @param {boolean} instantiate - boolean that determines if the created object is automatically added to the scene
+   * @returns {GameObject} - the created cube
+   */
+  CreateCube(options: primitive3DOptions = cubeDefaults, physicsOptions: PhysicsOptions = defaultPhysicsOptions, instantiate: boolean = true): GameObject {
+    const geometry = new THREE.BoxGeometry(options.scale.x, options.scale.y, options.scale.z);
+
+    // Check if texturePath is provided
+    let material;
+    if (options.texturePath) {
+      const textureLoader = new THREE.TextureLoader();
+      const texture = textureLoader.load(options.texturePath);
+      // Repeat texture in both directions
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      // how many times to repeat in each direction; the default is (1,1),
+      texture.repeat.set(options.textureRepeat?.x ?? 1, options.textureRepeat?.y ?? 1);
+      // Use MeshStandardMaterial for realistic lighting with textures
+      material = new THREE.MeshStandardMaterial({ map: texture, color: options.color ? new THREE.Color(options.color) : 0x00ff00 });
+    } else {
+      // Use basic material with color if no texturePath is provided
+      material = new THREE.MeshBasicMaterial({ color: options.color ? new THREE.Color(options.color) : 0x00ff00 });
     }
 
     const cube = new THREE.Mesh(geometry, material);
-    cube.position.set(position.x, position.y, position.z);
-    cube.rotation.set(rotation.x, rotation.y, rotation.z);
+    cube.position.set(options.position.x, options.position.y, options.position.z);
+    cube.rotation.set(options.rotation.x, options.rotation.y, options.rotation.z);
 
-    this.scene.add(cube);
+    let gameObject = new GameObject(this.scene, options.name, cube, physicsOptions)
+    if (instantiate) {
+      gameObject.Instantiate();
+    }
+    return gameObject;
+  }
+
+  /**
+     * Create a sphere with custom properties.
+     * @param {primitive3DOptions} options 
+     * @param {PhysicsOptions} physicsOptions - Physics options to be applied to the created GameObject
+     * @param {boolean} instantiate - boolean that determines if the created object is automatically added to the scene
+     * @returns {GameObject} - the created sphere
+     */
+  CreateSphere(options: primitive3DOptions = sphereDefaults, physicsOptions: PhysicsOptions = defaultPhysicsOptions, instantiate: boolean = true): GameObject {
+    const geometry = new THREE.SphereGeometry(options.scale.x, options.scale.y, options.scale.z);
+
+    // Check if texturePath is provided
+    let material;
+    if (options.texturePath) {
+      const textureLoader = new THREE.TextureLoader();
+      const texture = textureLoader.load(options.texturePath);
+      // Repeat texture in both directions
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      // how many times to repeat in each direction; the default is (1,1),
+      texture.repeat.set(options.textureRepeat?.x ?? 1, options.textureRepeat?.y ?? 1);
+      // Use MeshStandardMaterial for realistic lighting with textures
+      material = new THREE.MeshStandardMaterial({ map: texture, color: options.color ? new THREE.Color(options.color) : 0x00ff00 });
+    } else {
+      // Use basic material with color if no texturePath is provided
+      material = new THREE.MeshBasicMaterial({ color: options.color ? new THREE.Color(options.color) : 0x00ff00 });
+    }
+
+    const sphere = new THREE.Mesh(geometry, material);
+    sphere.position.set(options.position.x, options.position.y, options.position.z);
+    sphere.rotation.set(options.rotation.x, options.rotation.y, options.rotation.z);
+
+    let gameObject = new GameObject(this.scene, options.name, sphere, physicsOptions)
+    if (instantiate) {
+      gameObject.Instantiate();
+    }
+    return gameObject;
+  }
+
+  /**
+  * Create a cone with custom properties.
+  * @param {primitive3DOptions} options
+  * @param {PhysicsOptions} physicsOptions - Physics options to be applied to the created GameObject
+  * @param {boolean} instantiate - boolean that determines if the created object is automatically added to the scene
+  * @returns {GameObject} - the created cone
+  */
+  CreateCone(options: primitive3DOptions = coneDefaults, physicsOptions: PhysicsOptions = defaultPhysicsOptions, instantiate: boolean = true): GameObject {
+    const geometry = new THREE.ConeGeometry(options.scale.x, options.scale.y, options.scale.z);
+
+    // Check if texturePath is provided
+    let material;
+    if (options.texturePath) {
+      const textureLoader = new THREE.TextureLoader();
+      const texture = textureLoader.load(options.texturePath);
+
+      // Repeat texture in both directions
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+
+      // how many times to repeat in each direction; the default is (1,1),
+      texture.repeat.set(options.textureRepeat?.x ?? 1, options.textureRepeat?.y ?? 1);
+
+      // Use MeshStandardMaterial for realistic lighting with textures
+      material = new THREE.MeshStandardMaterial({ map: texture, color: options.color ? new THREE.Color(options.color) : 0x00ff00 });
+    } else {
+      // Use basic material with color if no texturePath is provided
+      material = new THREE.MeshBasicMaterial({ color: options.color ? new THREE.Color(options.color) : 0x00ff00 });
+    }
+
+    const cone = new THREE.Mesh(geometry, material);
+    cone.position.set(options.position.x, options.position.y, options.position.z);
+    cone.rotation.set(options.rotation.x, options.rotation.y, options.rotation.z);
+
+    let gameObject = new GameObject(this.scene, options.name, cone, physicsOptions);
+    if (instantiate) {
+      gameObject.Instantiate();
+    }
+    return gameObject;
+  }
+
+  /**
+   * Create a plane with custom properties.
+   * @param {primitive3DOptions} options
+   * @param {PhysicsOptions} physicsOptions - Physics options to be applied to the created GameObject
+   * @param {boolean} instantiate - boolean that determines if the created object is automatically added to the scene
+   * @returns {GameObject} - the created cone
+   */
+  CreatePlane(options: primitive3DOptions = planeDefaults, physicsOptions: PhysicsOptions = defaultPhysicsOptions, instantiate: boolean = true): GameObject {
+    const geometry = new THREE.PlaneGeometry(options.scale.x, options.scale.z);
+
+    // Check if texturePath is provided
+    let material;
+    if (options.texturePath) {
+      const textureLoader = new THREE.TextureLoader();
+      const texture = textureLoader.load(options.texturePath);
+
+      // Repeat texture in both directions
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+
+      // how many times to repeat in each direction; the default is (1,1),
+      texture.repeat.set(options.textureRepeat?.x ?? 1, options.textureRepeat?.y ?? 1);
+
+      // Use MeshStandardMaterial for realistic lighting with textures
+      material = new THREE.MeshStandardMaterial({ map: texture, color: options.color ? new THREE.Color(options.color) : 0x00ff00 });
+    } else {
+      // Use basic material with color if no texturePath is provided
+      material = new THREE.MeshBasicMaterial({ color: options.color ? new THREE.Color(options.color) : 0x00ff00 });
+    }
+
+    const plane = new THREE.Mesh(geometry, material);
+    plane.position.set(options.position.x, options.position.y, options.position.z);
+    plane.rotation.set(options.rotation.x, options.rotation.y, options.rotation.z);
+
+    let gameObject = new GameObject(this.scene, options.name, plane, physicsOptions);
+    if (instantiate) {
+      gameObject.Instantiate();
+    }
+    return gameObject;
   }
 
 

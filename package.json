@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "npm run build-all && npm run dev",
-    "build-all": "npx tsc && webpack",
+    "build-all": "npm run build-engine && npm run build-app",
     "build-engine": "npx tsc",
-    "build-app": "webpack",
+    "build-app": "webpack && rd dist",
     "dev": "webpack serve"
   },
   "keywords": [],

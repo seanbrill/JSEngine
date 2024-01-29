@@ -1,32 +1,8 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CameraManager = void 0;
 const FirstPersonCamera_1 = require("./FirstPersonCamera");
 const Camera_1 = require("./Camera");
-const THREE = __importStar(require("three"));
 const Physics_1 = require("../Base/Physics/Physics");
 class CameraManager {
     constructor(scene) {
@@ -47,20 +23,17 @@ class CameraManager {
         far = far === undefined ? 1000 : far;
         let cam = new Camera_1.Camera(this.scene, name, fov, near, far, pos, rot);
         this.cameras.push(cam);
-        if (this.scene instanceof THREE.Scene) {
-            this.scene.add(cam.camera);
-            if (!this.MainCamera)
-                this.MainCamera = cam;
-        }
+        if (this.scene)
+            this.scene.appScene.add(cam.camera);
+        if (!this.MainCamera)
+            this.MainCamera = cam;
     }
     CreateFirstPersonCamera(name, fov, near, far, pos, rot, movementSpeed, options = FirstPersonCamera_1.defaultFristPersonCameraOptions, physicsOptions = Physics_1.defaultPhysicsOptions) {
         let cam = new FirstPersonCamera_1.FirstPersonCamera(this.scene, name, fov, near, far, pos, rot, movementSpeed, options, physicsOptions);
         this.cameras.push(cam);
-        if (this.scene instanceof THREE.Scene) {
-            this.scene.add(cam.camera);
-            if (!this.MainCamera)
-                this.MainCamera = cam;
-        }
+        this.scene.appScene.add(cam.camera);
+        if (!this.MainCamera)
+            this.MainCamera = cam;
     }
     CreateThirdPersonCamera() { }
     CreateFreeFlyCamera() { }

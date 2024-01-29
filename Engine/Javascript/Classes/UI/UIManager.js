@@ -7,7 +7,6 @@ class UIManager {
         let id = "ui-manager-root";
         let root = document.createElement("div");
         root.id = id;
-        console.log("appending root");
         document.body.appendChild(root);
         UIManager.root = root;
         UIManager.root.style.position = "absolute";

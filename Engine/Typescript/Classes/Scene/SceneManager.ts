@@ -12,7 +12,11 @@ export class SceneManager {
   UIManager: UIManager;
 
   constructor() {
-    window.SceneManager = this;
+    if (!window.ActiveSceneManagers) {
+      window.ActiveSceneManagers = [this];
+    } else {
+      window.ActiveSceneManagers.push(this);
+    }
     this.UIManager = new UIManager();
   }
 
@@ -26,16 +30,12 @@ export class SceneManager {
    * @returns {void}  desc
    */
   CreateScene(parentNode: HTMLElement, sceneName: string, defaultCamera: boolean = true, defaultLight: boolean = true, trackFPS: boolean = true): void {
-    window.SceneManager = this;
     //prevent duplicate scene from instantiating
     if (this.scenes.find((x) => x.sceneName == sceneName)) return;
     if (!parentNode) return;
 
     //create scene object
     let new_scene = new Scene(sceneName, trackFPS);
-    new_scene.sceneName = sceneName;
-    new_scene.inputManager = new InputManager();
-    new_scene.cameraManager = new CameraManager(new_scene.scene);
 
     //create a canvas element
     new_scene.parent = parentNode;
@@ -53,8 +53,7 @@ export class SceneManager {
 
     //create a default light source
     if (defaultLight) {
-      let prim = new Primitives(new_scene.scene);
-      prim.CreateDirectionalLight(0xffffff, { x: 0, y: 10, z: 0 }, { x: 0, y: 0, z: 0 }, 3);
+      new_scene.primitiveObjects.CreateAmbientLight();
     }
 
     new_scene.renderer = new THREE.WebGLRenderer({ canvas: new_scene.canvas, antialias: true, powerPreference: "high-performance" });
@@ -78,7 +77,6 @@ export class SceneManager {
     }
 
     this.scenes.push(new_scene);
-    console.log('setting scene manager active scene');
     if (this.activeScene == null) this.activeScene = new_scene;
   }
 

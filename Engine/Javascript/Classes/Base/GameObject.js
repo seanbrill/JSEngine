@@ -27,25 +27,78 @@ exports.GameObject = void 0;
 const THREE = __importStar(require("three"));
 const Physics_1 = require("../Base/Physics/Physics");
 class GameObject {
-    constructor(scene, name, physicsOptions = Physics_1.defaultPhysicsOptions) {
+    constructor(scene, name, object = null, physicsOptions = Physics_1.defaultPhysicsOptions) {
         this.tags = [];
+        this.animations = [];
         this.translation = new THREE.Vector3();
         this.phi = 0;
         this.theta = 0;
+        this.isActive = true;
         this.scene = scene;
         this.name = name;
+        if (object)
+            this._object = object;
         this.PhysicsEngine = new Physics_1.PhysicsEngine(this, physicsOptions);
         this.Start();
     }
+    /**
+     * Called immediately on instantiation
+     * @returns {void}
+     */
     Start() {
         console.log(`GAME_OBJECT:${this.name}`, this);
     }
+    /**
+    * Spawns the 3D object into the appScene
+    * @returns {void}
+    */
+    Instantiate() {
+        //add to the 3d scene
+        if (this._object) {
+            this.scene.appScene.add(this._object);
+        }
+        //add reference to this class object to the active scene
+        this.scene.objects.push(this);
+    }
+    /**
+     * Sets this GameObject to inactive, removes the associated 3d object
+     * from 3d appScene. Executes OnDestroy
+     * @returns {void}
+     */
+    Destroy() {
+        this.OnDestroy();
+        if (this._object) {
+            //remove the physical object from the three js scene
+            this.scene.appScene.remove(this._object);
+        }
+        //remove this GameObject from the object array of the scene
+        let index = this.scene.objects.indexOf(this);
+        this.scene.objects.splice(index, 1);
+        //set to inactive
+        this.isActive = false;
+    }
+    /**
+    * A function to execute when the Destroy() method on this GameObject has been called
+    * @returns {void}
+    */
+    OnDestroy() { }
+    /**
+    * Managed by the scene ticks the logic sequence for this Object
+    * @returns {void}
+    */
     Update() {
+        if (!this.isActive)
+            return;
         //set the physics engine's object if it exists
         if (this.PhysicsEngine._object == null && this._object != null)
             this.PhysicsEngine._object = this._object;
         this.Physics();
     }
+    /**
+     * Base Physics implmentation, executed only if physics on this object is enabled
+     * allows this GameObject to interface with the Physics Engine.
+     * @returns {void}
+     */
     Physics() {
         if (!this._object)
             return;
@@ -53,6 +106,28 @@ class GameObject {
             return;
         this.PhysicsEngine.CheckForCollisions();
         this.PhysicsEngine.Gravity();
+    }
+    /**
+     * Adds a tag to this objects tag array, tags can be used to add a type of identifier
+     * for objects to allow some logic to br made easier. Example tag of enemy where only
+     * GameObjects with tag Enemy is affected by your attack
+     * @param {string} tag  - the name of the tag you wish to remove
+     * @returns {void}
+     */
+    AddTag(tag) {
+        if (!this.tags.includes(tag))
+            this.tags.push(tag);
+    }
+    /**
+     * Removes a tag from this objects tag array
+     * @param {string} tag  - the name of the tag you wish to remove
+     * @returns {void}
+     */
+    RemoveTag(tag) {
+        let index = this.tags.indexOf(tag);
+        if (index > -1) {
+            this.tags.splice(index, 1);
+        }
     }
     /**
      * Gets the forward vetor for the specifed phi and magnitude,

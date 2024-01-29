@@ -1,0 +1,22 @@
+body {
+    margin: 0;
+    background-color: black;
+    min-height: 100vh;
+    min-width: 100vw;
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+    font-family: monospace;
+}
+
+#root {
+    height: 100vh;
+    width: 100vw;
+}
+
+canvas {
+    height: 100% !important;
+    width: 100% !important;
+    background-color: black;
+    overflow: hidden;
+}

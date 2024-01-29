@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { GameObject } from "../Base/GameObject";
 import { PhysicsOptions, defaultPhysicsOptions } from "../Base/Physics/Physics";
 import { position, rotation } from "../Base/Interfaces";
+import { Scene } from "../Scene/Scene";
 
 export class Camera extends GameObject {
   camera: THREE.Camera;
@@ -9,8 +10,8 @@ export class Camera extends GameObject {
   near: number;
   far: number;
 
-  constructor(scene: THREE.Scene, name: string, fov: number, near: number, far: number, position: position = { x: 0, y: 0, z: 0 }, rotation: rotation = { x: 0, y: 0, z: 0 }, physicsOptions: PhysicsOptions = defaultPhysicsOptions) {
-    super(scene, name, physicsOptions);
+  constructor(scene: Scene, name: string, fov: number, near: number, far: number, position: position = { x: 0, y: 0, z: 0 }, rotation: rotation = { x: 0, y: 0, z: 0 }, physicsOptions: PhysicsOptions = defaultPhysicsOptions) {
+    super(scene, name, undefined, physicsOptions);
     this.name = name;
     this.fov = fov;
     this.near = near;

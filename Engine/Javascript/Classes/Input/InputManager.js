@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.InputManager = void 0;
 class InputManager {
     constructor() {
+        console.log('creating new input manager');
         InputManager.instance = this;
         //Track Key presses
         window.addEventListener("keydown", (e) => {
@@ -27,7 +28,6 @@ class InputManager {
         });
         //Track Mouse Buttons
         window.addEventListener("mousedown", (e) => {
-            console.log("mouse button : ", e.button);
             switch (e.button) {
                 case 1:
                     //record the users input

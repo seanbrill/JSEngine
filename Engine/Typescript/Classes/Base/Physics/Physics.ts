@@ -50,7 +50,7 @@ export class PhysicsEngine {
     const box1 = new THREE.Box3().setFromObject(helperObject, true);
     const position1 = helperObject.position.clone();
 
-    this.classObject.scene.traverse((object) => {
+    this.classObject.scene.appScene.traverse((object) => {
       if (object !== helperObject) {
         const box2 = new THREE.Box3().setFromObject(object, true);
         const position2 = object.position.clone();
@@ -58,8 +58,8 @@ export class PhysicsEngine {
           // Collision detected
           const direction = new THREE.Vector3().subVectors(position2, position1).normalize();
           this.collisions.push({ object, direction });
-          console.log("Collision with", object);
-          console.log("Collision direction:", direction);
+          //console.log("Collision with", object);
+          //console.log("Collision direction:", direction);
         }
       }
     });

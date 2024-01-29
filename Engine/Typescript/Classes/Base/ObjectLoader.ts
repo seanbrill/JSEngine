@@ -1,56 +1,88 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { scale, position, rotation, scale2D } from "./Interfaces";
+import { Scene } from "../Scene/Scene";
+import { ObjectLoaderOptions } from "./Interfaces";
+import { GameObject } from "./GameObject";
+import { PhysicsOptions, defaultPhysicsOptions } from "./Physics/Physics";
 
 export class ObjectLoader {
-    scene: THREE.Scene;
-    constructor(scene: THREE.Scene) {
+    scene: Scene;
+    constructor(scene: Scene) {
         this.scene = scene;
     }
 
     /**
-  * Load a GLTF model with custom properties.
-  * @param {string} modelPath - Path to the GLTF model file.
-  * @param {Object} scale - Scale of the model in each dimension {x, y, z}.
-  * @param {Object} position - Position of the model {x, y, z}.
-  * @param {Object} rotation - Rotation of the model in radians {x, y, z}.
-  * @param {Function} onLoadCallback - Callback function to execute when the model is loaded.
-  * @param {Function} onErrorCallback - Callback function to execute if there is an error loading the model.
-  */
-    LoadGLTFModel(modelPath: string, scale: scale = { x: 1, y: 1, z: 1 }, position: scale = { x: 0, y: 0, z: 0 }, rotation: scale = { x: 0, y: 0, z: 0 }, onLoadCallback?: (model: THREE.Group<THREE.Object3DEventMap>) => any, onErrorCallback?: (error: any) => any): void {
+        * Asynchronously load in a gltf model
+        * @param {ObjectLoaderOptions} options 
+        * @param {PhysicsOptions} physicsOptions - Physics options to be applied to the created GameObject
+        * @param {boolean} instantiate - boolean that determines if the created object is automatically added to the scene
+        * @returns {GameObject} - the created gltf
+        */
+    LoadGLTFModel(options: ObjectLoaderOptions, physicsOptions: PhysicsOptions = defaultPhysicsOptions, instantiate: boolean = true) {
         const loader = new GLTFLoader();
-
         loader.load(
-            modelPath,
+            options.modelPath,
             (gltf) => {
                 // Model loaded successfully
+                let animations: THREE.AnimationClip[] = [];
+                if (gltf.animations) {
+                    animations = gltf.animations;
+                }
                 const model = gltf.scene;
 
                 // Set custom properties
-                model.scale.set(scale.x, scale.y, scale.z);
-                model.position.set(position.x, position.y, position.z);
-                model.rotation.set(rotation.x, rotation.y, rotation.z);
+                model.scale.set(options.scale.x, options.scale.y, options.scale.z);
+                model.position.set(options.position.x, options.position.y, options.position.z);
+                model.rotation.set(options.rotation.x, options.rotation.y, options.rotation.z);
 
-                this.scene.add(model);
+                // Check if texturePath is provided
+                let material: THREE.Material;
+                if (options.texturePath) {
+                    const textureLoader = new THREE.TextureLoader();
+                    const texture = textureLoader.load(options.texturePath);
+                    // Repeat texture in both directions
+                    texture.wrapS = THREE.RepeatWrapping;
+                    texture.wrapT = THREE.RepeatWrapping;
+                    // how many times to repeat in each direction; the default is (1,1),
+                    texture.repeat.set(options.textureRepeat?.x ?? 1, options.textureRepeat?.y ?? 1);
+                    // Use MeshStandardMaterial for realistic lighting with textures
+                    material = new THREE.MeshStandardMaterial({ map: texture, color: options.color ? new THREE.Color(options.color) : 0x00ff00 });
+                } else {
+                    // Use basic material with color if no texturePath is provided
+                    material = new THREE.MeshBasicMaterial({ color: options.color ? new THREE.Color(options.color) : 0x00ff00 });
+                }
+                //set material on object
+                model.traverse((child) => {
+                    if (child instanceof THREE.Mesh) {
+                        child.material = material;
+                    }
+                });
+
+                let gameObject = new GameObject(this.scene, options.name, model, physicsOptions);
+                if (animations.length > 0) {
+                    gameObject.animations = animations;
+                }
+                this.scene.appScene.add(model);
+                if (instantiate) {
+                    gameObject.Instantiate();
+                }
 
                 // Execute onLoadCallback if provided
-                if (onLoadCallback) {
-                    onLoadCallback(model);
+                if (options.onLoad) {
+                    options.onLoad(gameObject);
                 }
             },
             (progress) => {
-                // Loading progress
-                console.log(`${(progress.loaded / progress.total) * 100}% loaded`);
+                if (options.onProgress) options.onProgress(progress);
             },
             (error) => {
-                // Error loading model
-                console.error("Error loading GLTF model", error);
-
-                // Execute onErrorCallback if provided
-                if (onErrorCallback) {
-                    onErrorCallback(error);
+                if (options.onError) {
+                    options.onError(error);
                 }
             }
         );
     }
+
+
 }

@@ -29,7 +29,7 @@ const GameObject_1 = require("../Base/GameObject");
 const Physics_1 = require("../Base/Physics/Physics");
 class Camera extends GameObject_1.GameObject {
     constructor(scene, name, fov, near, far, position = { x: 0, y: 0, z: 0 }, rotation = { x: 0, y: 0, z: 0 }, physicsOptions = Physics_1.defaultPhysicsOptions) {
-        super(scene, name, physicsOptions);
+        super(scene, name, undefined, physicsOptions);
         this.name = name;
         this.fov = fov;
         this.near = near;

@@ -25,7 +25,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Scene = void 0;
 const THREE = __importStar(require("three"));
+const InputManager_1 = require("../Input/InputManager");
+const CameraManager_1 = require("../Cameras/CameraManager");
 const UIManager_1 = require("../UI/UIManager");
+const PrimitiveHelpers_1 = require("../Base/PrimitiveHelpers");
+const AudioManager_1 = require("../Audio/AudioManager");
 class Scene {
     constructor(sceneName, trackFPS = false) {
         this.isActive = false;
@@ -42,7 +46,11 @@ class Scene {
         this.currentTime = 0;
         this.sceneName = sceneName;
         this.trackFPS = trackFPS;
-        this.scene = new THREE.Scene();
+        this.appScene = new THREE.Scene();
+        this.primitiveObjects = new PrimitiveHelpers_1.Primitives(this);
+        this.inputManager = new InputManager_1.InputManager();
+        this.cameraManager = new CameraManager_1.CameraManager(this);
+        this.audioManager = new AudioManager_1.AudioManager(this);
         //resize scene to browser window
         window.addEventListener("resize", () => {
             var _a, _b;
@@ -77,6 +85,10 @@ class Scene {
         this.isActive = true;
         return new Promise((resolve) => {
             const animate = () => {
+                let timeStart = performance.now();
+                if (this.frame === 0)
+                    this.programStartTime = performance.now();
+                this.Update();
                 //Validate
                 if (!this.cameraManager)
                     throw new Error("Three js camera must be initialized to start the scene");
@@ -84,17 +96,15 @@ class Scene {
                     throw new Error("Three js camera must be initialized to start the scene");
                 if (!this.cameraManager.MainCamera.camera)
                     throw new Error("Three js camera must be initialized to start the scene");
-                if (!this.scene)
+                if (!this.appScene)
                     throw new Error("Three js scene must be initialized to start the scene");
                 if (!this.renderer)
                     throw new Error("Renderer must be initialized to start the scene");
                 if (!this.isActive)
                     return;
-                let timeStart = performance.now();
                 requestAnimationFrame(animate);
                 if (this.trackFPS) {
                     if (this.frame === 0) {
-                        this.programStartTime = performance.now();
                         this.fpsStartTime = this.programStartTime;
                     }
                     this.frame += 1;
@@ -102,7 +112,7 @@ class Scene {
                     this.CalculateFPS();
                 }
                 animateLogic();
-                this.renderer.render(this.scene, this.cameraManager.MainCamera.camera);
+                this.renderer.render(this.appScene, this.cameraManager.MainCamera.camera);
                 this.cameraManager.Update();
                 UIManager_1.UIManager.Update();
                 this.deltaTime = (performance.now() - timeStart) / 1000;
@@ -112,26 +122,19 @@ class Scene {
             resolve();
         });
     }
+    /**
+     * Stops the execution of further frames
+     * @returns {void}  desc
+     */
     Stop() {
         this.isActive = false;
     }
+    /**
+     * Logic to be executed once per frame
+     * @returns {void}  desc
+     */
     Update() {
         this.previousFrame = Object.assign({}, this);
-    }
-    SetSkyBox(skybox_texture_paths = []) {
-        try {
-            //if (skybox_texture_paths.length != 6) skybox_texture_paths = [skybox_texture_paths[0], skybox_texture_paths[0], skybox_texture_paths[0], skybox_texture_paths[0], skybox_texture_paths[0], skybox_texture_paths[0]];
-            const textureLoader = new THREE.TextureLoader();
-            const texture = textureLoader.load(skybox_texture_paths[0]);
-            const geometry = new THREE.BoxGeometry(1000, 1000, 1000); // Adjust the size as needed
-            const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.BackSide });
-            const skybox = new THREE.Mesh(geometry, material);
-            skybox.position.copy(new THREE.Vector3(0, 0, 0));
-            this.scene.add(skybox);
-        }
-        catch (error) {
-            console.log("set skybox error: ", error);
-        }
     }
     /**
      * Shows the on screen fps counter

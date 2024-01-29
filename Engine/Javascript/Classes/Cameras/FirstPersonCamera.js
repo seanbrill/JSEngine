@@ -62,7 +62,13 @@ class FirstPersonCamera extends Camera_1.Camera {
     }
     Update() {
         super.Update();
-        this.camera.position.lerp(this.translation, 0.15);
+        //normalize the transition to 1s
+        if (this.scene.deltaTime < 0.001) {
+            this.camera.position.lerp(this.translation, (this.scene.deltaTime * 1000));
+        }
+        else {
+            this.camera.position.lerp(this.translation, (0.0005 * 1000));
+        }
     }
     RegisterLookToggle() {
         if (this.options.toggleLook) {
@@ -99,7 +105,13 @@ class FirstPersonCamera extends Camera_1.Camera {
     RegisterMove() {
         InputManager_1.InputManager.RegisterHandler("keydown", () => {
             let keys = Array.from(InputManager_1.InputManager.GetActiveKeys());
-            let movementFactor = 0.1;
+            let movementFactor = 1;
+            if (this.scene.deltaTime < 0.001) {
+                movementFactor = (500 * this.scene.deltaTime);
+            }
+            else {
+                movementFactor = (500 * 0.0005);
+            }
             let forward = this.GetForwardVector(this.movementSpeed * movementFactor);
             let left = this.GetLeftVector(this.movementSpeed * movementFactor);
             //W,A,S,D

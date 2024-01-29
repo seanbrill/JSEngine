@@ -3,14 +3,15 @@ import { Camera } from "./Camera";
 import * as THREE from "three";
 import { PhysicsOptions, defaultPhysicsOptions } from "../Base/Physics/Physics";
 import { position, rotation } from "../Base/Interfaces";
+import { Scene } from "../Scene/Scene";
 
 export class CameraManager {
-  scene: THREE.Scene;
+  scene: Scene;
   cameras: Camera[] = [];
   activeIndex: number = 0;
   MainCamera: Camera | null = null;
 
-  constructor(scene: THREE.Scene) {
+  constructor(scene: Scene) {
     this.scene = scene;
   }
 
@@ -27,19 +28,16 @@ export class CameraManager {
     far = far === undefined ? 1000 : far;
     let cam = new Camera(this.scene, name, fov, near, far, pos, rot);
     this.cameras.push(cam);
-    if (this.scene instanceof THREE.Scene) {
-      this.scene.add(cam.camera);
-      if (!this.MainCamera) this.MainCamera = cam;
-    }
+    if (this.scene)
+      this.scene.appScene.add(cam.camera);
+    if (!this.MainCamera) this.MainCamera = cam;
   }
 
   CreateFirstPersonCamera(name: string, fov: number, near: number, far: number, pos: position, rot: rotation, movementSpeed: number, options = defaultFristPersonCameraOptions, physicsOptions: PhysicsOptions = defaultPhysicsOptions) {
     let cam = new FirstPersonCamera(this.scene, name, fov, near, far, pos, rot, movementSpeed, options, physicsOptions);
     this.cameras.push(cam);
-    if (this.scene instanceof THREE.Scene) {
-      this.scene.add(cam.camera);
-      if (!this.MainCamera) this.MainCamera = cam;
-    }
+    this.scene.appScene.add(cam.camera);
+    if (!this.MainCamera) this.MainCamera = cam;
   }
 
   CreateThirdPersonCamera() { }

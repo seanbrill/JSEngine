@@ -19,3 +19,21 @@ import { SceneManager } from "./Engine/Javascript/Classes/Scene/SceneManager";
 
 import { Screen } from "./Engine/Javascript/Classes/UI/Screen";
 import { UIManager } from "./Engine/Javascript/Classes/UI/UIManager";
+
+//expose these classes to the browser window
+//this is the best current solution I have come up with to expose the classes when importing the minified js
+window.THREE = THREE;
+window.PhysicsEngine = PhysicsEngine;
+window.GameObject = GameObject;
+window.MathHelpers = MathHelpers;
+window.ObjectLoader = ObjectLoader;
+window.Primitives = Primitives;
+window.Camera = Camera;
+window.FirstPersonCamera = FirstPersonCamera;
+window.CameraManager = CameraManager;
+window.InputManager = InputManager;
+window.InputManager.instance = new InputManager();
+window.Scene = Scene;
+window.SceneManager = SceneManager;
+window.Screen = Screen;
+window.UIManager = UIManager;

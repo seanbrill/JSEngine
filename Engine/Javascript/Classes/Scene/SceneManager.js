@@ -26,15 +26,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SceneManager = void 0;
 const THREE = __importStar(require("three"));
 const Scene_1 = require("./Scene");
-const InputManager_1 = require("../Input/InputManager");
-const CameraManager_1 = require("../Cameras/CameraManager");
-const PrimitiveHelpers_1 = require("../Base/PrimitiveHelpers");
 const UIManager_1 = require("../UI/UIManager");
 class SceneManager {
     constructor() {
         this.scenes = [];
         this.activeSceneIndex = 0;
-        window.SceneManager = this;
+        if (!window.ActiveSceneManagers) {
+            window.ActiveSceneManagers = [this];
+        }
+        else {
+            window.ActiveSceneManagers.push(this);
+        }
         this.UIManager = new UIManager_1.UIManager();
     }
     /**
@@ -47,7 +49,6 @@ class SceneManager {
      * @returns {void}  desc
      */
     CreateScene(parentNode, sceneName, defaultCamera = true, defaultLight = true, trackFPS = true) {
-        window.SceneManager = this;
         //prevent duplicate scene from instantiating
         if (this.scenes.find((x) => x.sceneName == sceneName))
             return;
@@ -55,9 +56,6 @@ class SceneManager {
             return;
         //create scene object
         let new_scene = new Scene_1.Scene(sceneName, trackFPS);
-        new_scene.sceneName = sceneName;
-        new_scene.inputManager = new InputManager_1.InputManager();
-        new_scene.cameraManager = new CameraManager_1.CameraManager(new_scene.scene);
         //create a canvas element
         new_scene.parent = parentNode;
         new_scene.canvas = document.createElement("canvas");
@@ -72,8 +70,7 @@ class SceneManager {
         }
         //create a default light source
         if (defaultLight) {
-            let prim = new PrimitiveHelpers_1.Primitives(new_scene.scene);
-            prim.CreateDirectionalLight(0xffffff, { x: 0, y: 10, z: 0 }, { x: 0, y: 0, z: 0 }, 3);
+            new_scene.primitiveObjects.CreateAmbientLight();
         }
         new_scene.renderer = new THREE.WebGLRenderer({ canvas: new_scene.canvas, antialias: true, powerPreference: "high-performance" });
         new_scene.renderer.setSize(parentNode.clientWidth, parentNode.clientHeight);
@@ -94,7 +91,6 @@ class SceneManager {
             new_scene.fpsCounter.style.color = "#3ab3ff";
         }
         this.scenes.push(new_scene);
-        console.log('setting scene manager active scene');
         if (this.activeScene == null)
             this.activeScene = new_scene;
     }
